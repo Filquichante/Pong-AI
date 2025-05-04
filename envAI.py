@@ -15,7 +15,10 @@ class EnvAI:
                        self.game.ball.rect.centerx / self.game.WIDTH,
                        self.game.ball.speed_x / self.game.BALL_SPEED,
                        self.game.ball.speed_y / self.game.BALL_SPEED])
-        print(self.state)
+
+
+
+
 
     def update(self):
         self.state = torch.Tensor([self.game.left_paddle.rect.centery / self.game.HEIGHT,
@@ -25,8 +28,12 @@ class EnvAI:
                        self.game.ball.speed_x / self.game.BALL_SPEED,
                        self.game.ball.speed_y / self.game.BALL_SPEED])
         
+        # Obtenir les probabilités des actions
         preds = self.game.agent(self.state)
-        action = torch.argmax(preds).item()
+        
+        # Choisir une action en fonction des probabilités
+        action = torch.multinomial(preds, 1).item()
+        print(preds, action)
 
         if action == 0:
             self.game.left_paddle.move("up", self.game.HEIGHT)
