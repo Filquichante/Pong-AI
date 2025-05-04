@@ -10,7 +10,7 @@ class EnvAI:
     def __init__(self, game):
         self.game = game
         self.state = torch.Tensor([self.game.left_paddle.rect.centery / self.game.HEIGHT,
-                       self.game.left_paddle.rect.centery / self.game.HEIGHT,
+                       self.game.right_paddle.rect.centery / self.game.HEIGHT,
                        self.game.ball.rect.centery / self.game.HEIGHT,
                        self.game.ball.rect.centerx / self.game.WIDTH,
                        self.game.ball.speed_x / self.game.BALL_SPEED,
@@ -29,7 +29,7 @@ class EnvAI:
 
     def update(self):
         self.state = torch.Tensor([self.game.left_paddle.rect.centery / self.game.HEIGHT,
-                       self.game.left_paddle.rect.centery / self.game.HEIGHT,
+                       self.game.right_paddle.rect.centery / self.game.HEIGHT,
                        self.game.ball.rect.centery / self.game.HEIGHT,
                        self.game.ball.rect.centerx / self.game.WIDTH,
                        self.game.ball.speed_x / self.game.BALL_SPEED,

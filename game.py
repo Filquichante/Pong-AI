@@ -11,8 +11,9 @@ class Game():
     def __init__(self):
 
 
-        self.display_active = False
+        self.display_active = True
         self.trainingAI = True
+        self.AI_touched_the_ball = False
 
 
         # Constantes
@@ -23,12 +24,12 @@ class Game():
         self.BALL_RADIUS = 7
 
         self.BALL_SPEED = 12
-        self.PADDLE_SPEED = self.BALL_SPEED // 2
+        self.PADDLE_SPEED = self.BALL_SPEED // 1.5
 
-        self.FPS = 10000 if self.trainingAI else 60
+        self.FPS = 10000 if self.display_active else 60
 
-        self.passive_reward = -1e4  # Récompense passive pour chaque frame
-        self.botOP_error = 60  # Récompense pour le botOP
+        self.passive_reward = 0  # Récompense passive pour chaque frame
+        self.botOP_error = 100  # Erreur du botOP
 
         # Initialisation de Pygame
         pygame.init()
@@ -60,9 +61,9 @@ class Game():
 
     def update(self):
         # Mouvements
-        #self.left_paddle.move_towards(self.ball.rect.centery, self.HEIGHT)
+        self.left_paddle.move_towards(self.ball.rect.centery, self.HEIGHT)
         self.envAI.update()
-        self.AI_touched_the_ball = False
+        
         #self.right_paddle.move_manual(pygame.K_UP, pygame.K_DOWN, self.HEIGHT)
 
         # Mouvements de la balle
@@ -72,23 +73,25 @@ class Game():
         self.ball.check_collision(self.left_paddle, self.right_paddle, self.BALL_SPEED)
 
         # Update de la prédiction du botOP
-        self.bot.update()
+        #self.bot.update()
 
         # Vérification des scores
         if self.ball.rect.left <= 0:
             self.right_score += 1
             self.ball.reset(self.WIDTH, self.HEIGHT)
             if self.trainingAI and self.AI_touched_the_ball:
-                self.envAI.end_of_episode(1)
+                self.envAI.end_of_episode(10)
                 self.manage_episode_results()
+                self.AI_touched_the_ball = False
 
         elif self.ball.rect.right >= self.WIDTH:
             self.left_score += 1
             self.ball.reset(self.WIDTH, self.HEIGHT)
             
-            if self.trainingAI and self.AI_touched_the_ball:
+            if self.trainingAI:
                 self.envAI.end_of_episode(-1)
                 self.manage_episode_results()
+                self.AI_touched_the_ball = False
 
     def draw(self):
         # Affichage

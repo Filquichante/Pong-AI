@@ -6,7 +6,7 @@ class Ball:
         self.game = game
         self.rect = pygame.Rect(WIDTH // 2 - BALL_RADIUS, HEIGHT // 2 - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2)
         self.angle = 0
-        self.update_angle(math.pi / 12 * random.choice([0,1,2,4,5,7,8,10,11]))
+        self.update_angle(math.pi / 6 * random.choice([0,1,2,4,5,7,8,10,11]))
 
     def move(self, WIDTH, HEIGHT):
         self.rect.x += self.speed_x
@@ -21,7 +21,7 @@ class Ball:
 
     def reset(self, WIDTH, HEIGHT):
         self.rect.center = (WIDTH // 2, HEIGHT // 2)
-        self.update_angle(math.pi / 12 * random.choice([0,1,2,4,5,7,8,10,11]))  # Angle de départ aléatoire entre -15° et 15°
+        self.update_angle(math.pi / 6 * random.choice([0,1,2,4,5,7,8,10,11]))  # Angle de départ aléatoire entre -15° et 15°
 
     def draw(self, surface, color):
         pygame.draw.ellipse(surface, color, self.rect)
