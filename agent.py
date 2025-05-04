@@ -16,7 +16,8 @@ class Agent(nn.Module):
             nn.ReLU(),
             nn.Linear(128, 64),
             nn.ReLU(),
-            nn.Linear(64, 2)  # Deux actions possibles : haut ou bas
+            nn.Linear(64, 2),
+            nn.Softmax(dim=-1)  # Softmax pour obtenir des probabilités
         )
     
     def forward(self, state):
