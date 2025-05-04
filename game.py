@@ -4,6 +4,7 @@ from paddle import Paddle
 from ball import Ball
 from envAI import EnvAI
 from agent import Agent
+from BotOp import BotOP
 
 class Game():
     def __init__(self):
@@ -43,6 +44,9 @@ class Game():
         self.envAI = EnvAI(self)
         self.agent = Agent(self.envAI)
 
+        # Création de l'instance du BotOP
+        self.bot = BotOP(50,(self.HEIGHT - self.PADDLE_HEIGHT)//2,self.PADDLE_WIDTH,self.PADDLE_HEIGHT,self.PADDLE_SPEED,self)
+
         # Scores
         self.left_score = 0
         self.right_score = 0
@@ -58,6 +62,9 @@ class Game():
 
         # Vérification des collisions
         self.ball.check_collision(self.left_paddle, self.right_paddle, self.BALL_SPEED)
+
+        # Update de la prédiction du botOP
+        self.bot.update()
 
         # Vérification des scores
         if self.ball.rect.left <= 0:
