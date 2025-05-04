@@ -36,6 +36,6 @@ class EnvAI:
         print(preds, action)
 
         if action == 0:
-            self.game.left_paddle.move("up", self.game.HEIGHT)
+            self.game.right_paddle.move("up", self.game.HEIGHT)
         elif action == 1:
-            self.game.left_paddle.move("down", self.game.HEIGHT)
+            self.game.right_paddle.move("down", self.game.HEIGHT)

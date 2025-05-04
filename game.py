@@ -54,8 +54,9 @@ class Game():
 
     def update(self):
         # Mouvements
-        self.left_paddle.move_towards(self.ball.rect.centery, self.HEIGHT)
-        self.envAI.update()
+        #self.left_paddle.move_towards(self.ball.rect.centery, self.HEIGHT)
+        #self.envAI.update()
+        self.right_paddle.move_manual(pygame.K_UP, pygame.K_DOWN, self.HEIGHT)
 
         # Mouvements de la balle
         self.ball.move(self.WIDTH, self.HEIGHT)
