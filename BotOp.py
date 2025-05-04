@@ -1,3 +1,4 @@
+import random
 
 class BotOP:
   
@@ -21,6 +22,9 @@ class BotOP:
         target_x = self.x + self.width
 
         t = (target_x - bx)/vx
+        if t < 0:
+            return self.game.HEIGHT // 2
+        
         period = 2 * (self.game.HEIGHT - self.ball_radius*2)
         simul_y = (by - self.ball_radius + vy*t)%period
         if simul_y > (self.game.HEIGHT - self.ball_radius*2):
@@ -30,10 +34,16 @@ class BotOP:
         return simul_y + self.ball_radius           # Le y prédit, il faut maintenant s'y rendre.
 
     def update(self):
+        
+        
 
         target_y = self.predict_ball_y()
         paddle_rect = self.game.left_paddle.rect
-        
+
+        # Calcul de l'erreur NB : -50,50 est un niveau humain, ça devient très compliqué vers -30,30. Si on descend encore plus il n'est plus battable par un humain.
+        error = random.gauss(-50, 50)  
+        target_y = target_y + error
+
         # Déplacement vers target
         if paddle_rect.centery < target_y:
             paddle_rect.y += self.speed
