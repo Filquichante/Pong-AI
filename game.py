@@ -62,6 +62,7 @@ class Game():
         # Mouvements
         #self.left_paddle.move_towards(self.ball.rect.centery, self.HEIGHT)
         self.envAI.update()
+        self.AI_touched_the_ball = False
         #self.right_paddle.move_manual(pygame.K_UP, pygame.K_DOWN, self.HEIGHT)
 
         # Mouvements de la balle
@@ -77,7 +78,7 @@ class Game():
         if self.ball.rect.left <= 0:
             self.right_score += 1
             self.ball.reset(self.WIDTH, self.HEIGHT)
-            if self.trainingAI:
+            if self.trainingAI and self.AI_touched_the_ball:
                 self.envAI.end_of_episode(1)
                 self.manage_episode_results()
 
@@ -85,7 +86,7 @@ class Game():
             self.left_score += 1
             self.ball.reset(self.WIDTH, self.HEIGHT)
             
-            if self.trainingAI:
+            if self.trainingAI and self.AI_touched_the_ball:
                 self.envAI.end_of_episode(-1)
                 self.manage_episode_results()
 

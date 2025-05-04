@@ -49,6 +49,7 @@ class Ball:
 
             #Récompenser l'IA si elle touche la balle
             if self.game.trainingAI:
+                self.game.AI_touched_the_ball = True
                 self.game.envAI.rewards[-1] += 1
 
             # Inverser la direction horizontale et ajuster l'angle
