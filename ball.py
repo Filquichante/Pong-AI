@@ -3,6 +3,7 @@ import pygame, sys, random, math
 class Ball:
     def __init__(self, WIDTH, HEIGHT, BALL_RADIUS, BALL_SPEED, game):
         self.BALL_SPEED = BALL_SPEED
+        self.game = game
         self.rect = pygame.Rect(WIDTH // 2 - BALL_RADIUS, HEIGHT // 2 - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2)
         self.angle = 0
         self.update_angle(math.pi / 12 * random.choice([0,1,2,4,5,7,8,10,11]))
@@ -45,6 +46,11 @@ class Ball:
             self.update_angle(self.angle)
 
         if self.rect.colliderect(paddle2.rect):
+
+            #Récompenser l'IA si elle touche la balle
+            if self.game.trainingAI:
+                self.game.envAI.rewards[-1] += 1
+
             # Inverser la direction horizontale et ajuster l'angle
             self.angle = math.pi - self.angle
 

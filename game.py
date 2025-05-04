@@ -27,6 +27,9 @@ class Game():
 
         self.FPS = 60
 
+        self.passive_reward = -1e4  # Récompense passive pour chaque frame
+        self.botOP_error = 50  # Récompense pour le botOP
+
         # Initialisation de Pygame
         pygame.init()
 
@@ -44,7 +47,8 @@ class Game():
         self.right_paddle = Paddle(self.WIDTH - 50 - self.PADDLE_WIDTH, (self.HEIGHT - self.PADDLE_HEIGHT) // 2, self.PADDLE_WIDTH, self.PADDLE_HEIGHT, self.PADDLE_SPEED, self)
         self.ball = Ball(self.WIDTH, self.HEIGHT, self.BALL_RADIUS, self.BALL_SPEED, self)
         self.envAI = EnvAI(self)
-        self.agent = Agent(self.envAI)
+        self.load_agent(Agent, "agent.pth")
+        self.envAI.prepare_training()
 
         # Création de l'instance du BotOP
         self.bot = BotOP(50,(self.HEIGHT - self.PADDLE_HEIGHT)//2,self.PADDLE_WIDTH,self.PADDLE_HEIGHT,self.PADDLE_SPEED,self)
@@ -104,3 +108,21 @@ class Game():
         self.screen.blit(loss_text, (self.WIDTH // 2 - loss_text.get_width() // 2, 20))
         self.screen.blit(left_text, (self.WIDTH // 4 - left_text.get_width() // 2, 20))
         self.screen.blit(right_text, (3 * self.WIDTH // 4 - right_text.get_width() // 2, 20))
+
+    def save_agent(self, path="agent.pth"):
+        torch.save(self.agent.state_dict(), "agent.pth")
+        print("Agent enregistré")
+
+
+    def load_agent(self, agent_class, path="agent.pth"):
+        self.agent = agent_class(self.envAI)
+
+        try:
+            self.agent.load_state_dict(torch.load(path))
+            if self.trainingAI:
+                self.agent.train()
+            else:
+                self.agent.eval()
+
+        except FileNotFoundError:
+            print("Le fichier n'existe pas. Un nouvel agent sera créé.")

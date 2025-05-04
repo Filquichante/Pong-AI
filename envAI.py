@@ -21,6 +21,9 @@ class EnvAI:
         self.rewards = []
         self.loss = torch.tensor(0)
 
+    def prepare_training(self):
+        self.optimizer = optim.Adam(self.game.agent.parameters(), lr=0.001)
+
 
 
 
@@ -53,13 +56,13 @@ class EnvAI:
     ## Fonction pour enregistrer les informations de chaque frame
     def log_informations(self):
         self.log_probs.append(self.distrib.log_prob(self.action))
-        self.rewards.append(-1e3) # Récompense négative pour chaque frame
+        self.rewards.append(self.game.passive_reward) # Récompense négative pour chaque frame
     
 
     ## Fonction pour enregistrer la récompense finale de chaque frame de l'épisode, puis la fonction d'erreur
     def end_of_episode(self, final_reward):
 
-        self.optimizer = optim.Adam(self.game.agent.parameters(), lr=0.001)
+        
 
 
         self.returns = []
@@ -80,6 +83,7 @@ class EnvAI:
 
         self.optimizer.zero_grad()
         self.loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.game.agent.parameters(), max_norm=1.0)  # Clip des gradients
         self.optimizer.step()
 
         # Réinitialiser les listes pour le prochain épisode

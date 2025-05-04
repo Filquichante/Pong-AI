@@ -41,7 +41,7 @@ class BotOP:
         paddle_rect = self.game.left_paddle.rect
 
         # Calcul de l'erreur NB : -50,50 est un niveau humain, ça devient très compliqué vers -30,30. Si on descend encore plus il n'est plus battable par un humain.
-        error = random.gauss(-50, 50)  
+        error = random.gauss(-self.game.botOP_error, self.game.botOP_error)  
         target_y = target_y + error
 
         # Déplacement vers target
