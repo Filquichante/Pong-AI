@@ -11,7 +11,7 @@ class Game():
     def __init__(self):
 
 
-        self.active = True
+        self.display_active = False
         self.trainingAI = True
 
 
@@ -25,10 +25,10 @@ class Game():
         self.BALL_SPEED = 12
         self.PADDLE_SPEED = self.BALL_SPEED // 2
 
-        self.FPS = 60
+        self.FPS = 10000 if self.trainingAI else 60
 
         self.passive_reward = -1e4  # Récompense passive pour chaque frame
-        self.botOP_error = 50  # Récompense pour le botOP
+        self.botOP_error = 60  # Récompense pour le botOP
 
         # Initialisation de Pygame
         pygame.init()
@@ -79,6 +79,7 @@ class Game():
             self.ball.reset(self.WIDTH, self.HEIGHT)
             if self.trainingAI:
                 self.envAI.end_of_episode(1)
+                self.manage_episode_results()
 
         elif self.ball.rect.right >= self.WIDTH:
             self.left_score += 1
@@ -86,6 +87,7 @@ class Game():
             
             if self.trainingAI:
                 self.envAI.end_of_episode(-1)
+                self.manage_episode_results()
 
     def draw(self):
         # Affichage
@@ -126,3 +128,16 @@ class Game():
 
         except FileNotFoundError:
             print("Le fichier n'existe pas. Un nouvel agent sera créé.")
+
+
+    def manage_episode_results(self):
+        # Affichage des résultats de l'épisode
+        print("----------------------------------")
+        print("Score gauche :", self.left_score)
+        print("Score droite :", self.right_score)
+        print("Loss :", self.envAI.loss.item())
+        print("----------------------------------")
+
+        if self.left_score%100 == 0 or self.right_score%100 == 0:
+            self.save_agent("agent.pth")
+            print("Agent enregistré tous les 100 scores !")

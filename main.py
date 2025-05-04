@@ -19,7 +19,7 @@ while True:
             sys.exit()
 
     game.update()
-    if game.active:
+    if game.display_active:
         game.draw()
     game.clock.tick(game.FPS)
     pygame.display.flip()
