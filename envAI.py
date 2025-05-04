@@ -15,7 +15,11 @@ class EnvAI:
                        self.game.ball.rect.centerx / self.game.WIDTH,
                        self.game.ball.speed_x / self.game.BALL_SPEED,
                        self.game.ball.speed_y / self.game.BALL_SPEED])
-
+        
+        self.gamma = 0.99  # Discount factor
+        self.log_probs = []
+        self.rewards = []
+        self.loss = torch.tensor(0)
 
 
 
@@ -31,11 +35,53 @@ class EnvAI:
         # Obtenir les probabilités des actions
         preds = self.game.agent(self.state)
         
-        # Choisir une action en fonction des probabilités
-        action = torch.multinomial(preds, 1).item()
-        print(preds, action)
+        # Choisir une self.action en fonction des probabilités
+        self.distrib = torch.distributions.Categorical(preds)
+        self.action = self.distrib.sample()
 
-        if action == 0:
+
+        if self.action == 0:
             self.game.right_paddle.move("up", self.game.HEIGHT)
-        elif action == 1:
+        elif self.action == 1:
             self.game.right_paddle.move("down", self.game.HEIGHT)
+
+
+        if self.game.trainingAI:
+            self.log_informations()
+
+
+    ## Fonction pour enregistrer les informations de chaque frame
+    def log_informations(self):
+        self.log_probs.append(self.distrib.log_prob(self.action))
+        self.rewards.append(-1e3) # Récompense négative pour chaque frame
+    
+
+    ## Fonction pour enregistrer la récompense finale de chaque frame de l'épisode, puis la fonction d'erreur
+    def end_of_episode(self, final_reward):
+
+        self.optimizer = optim.Adam(self.game.agent.parameters(), lr=0.001)
+
+
+        self.returns = []
+        for r in reversed(self.rewards):
+            final_reward = r + self.gamma * final_reward
+            self.returns.append(final_reward)
+        self.returns.reverse()
+
+        self.returns = torch.tensor(self.returns)
+        self.returns = (self.returns - self.returns.mean()) / (self.returns.std() + 1e-8)  # normalisation
+
+        # Compute weighted log probabilities
+        weighted_log_probs = torch.stack(self.log_probs) * self.returns
+        
+        # Compute the loss as the negative sum of weighted log probabilities
+        self.loss = -torch.sum(weighted_log_probs)
+
+
+        self.optimizer.zero_grad()
+        self.loss.backward()
+        self.optimizer.step()
+
+        # Réinitialiser les listes pour le prochain épisode
+        self.log_probs = []
+        self.rewards = []

@@ -1,5 +1,6 @@
 import pygame
 import sys
+import torch
 from paddle import Paddle
 from ball import Ball
 from envAI import EnvAI
@@ -11,6 +12,7 @@ class Game():
 
 
         self.active = True
+        self.trainingAI = True
 
 
         # Constantes
@@ -55,8 +57,8 @@ class Game():
     def update(self):
         # Mouvements
         #self.left_paddle.move_towards(self.ball.rect.centery, self.HEIGHT)
-        #self.envAI.update()
-        self.right_paddle.move_manual(pygame.K_UP, pygame.K_DOWN, self.HEIGHT)
+        self.envAI.update()
+        #self.right_paddle.move_manual(pygame.K_UP, pygame.K_DOWN, self.HEIGHT)
 
         # Mouvements de la balle
         self.ball.move(self.WIDTH, self.HEIGHT)
@@ -71,9 +73,15 @@ class Game():
         if self.ball.rect.left <= 0:
             self.right_score += 1
             self.ball.reset(self.WIDTH, self.HEIGHT)
+            if self.trainingAI:
+                self.envAI.end_of_episode(1)
+
         elif self.ball.rect.right >= self.WIDTH:
             self.left_score += 1
             self.ball.reset(self.WIDTH, self.HEIGHT)
+            
+            if self.trainingAI:
+                self.envAI.end_of_episode(-1)
 
     def draw(self):
         # Affichage
@@ -92,5 +100,7 @@ class Game():
         # Scores
         left_text = self.font.render(str(self.left_score), True, self.WHITE)
         right_text = self.font.render(str(self.right_score), True, self.WHITE)
+        loss_text = self.font.render("Loss: " + str(self.envAI.loss.item()), True, self.WHITE)
+        self.screen.blit(loss_text, (self.WIDTH // 2 - loss_text.get_width() // 2, 20))
         self.screen.blit(left_text, (self.WIDTH // 4 - left_text.get_width() // 2, 20))
         self.screen.blit(right_text, (3 * self.WIDTH // 4 - right_text.get_width() // 2, 20))
