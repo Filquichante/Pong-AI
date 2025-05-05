@@ -1,5 +1,6 @@
 import pygame
 import sys
+import random
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -22,7 +23,7 @@ class EnvAI:
         self.loss = torch.tensor(0)
 
     def prepare_training(self):
-        self.optimizer = optim.Adam(self.game.agent.parameters(), lr=0.001)
+        self.optimizer = optim.Adam(self.game.agent.parameters(), lr=0.1)
 
 
 
@@ -35,9 +36,12 @@ class EnvAI:
                        self.game.ball.speed_x / self.game.BALL_SPEED,
                        self.game.ball.speed_y / self.game.BALL_SPEED])
         
-        
+
         # Obtenir les probabilités des actions
-        preds = self.game.agent(self.state)
+        if self.game.epsilon_AI < random.random():
+            preds = self.game.agent(self.state)
+        else:
+            preds = torch.tensor([0.5, 0.5])
         
         # Choisir une self.action en fonction des probabilités
         self.distrib = torch.distributions.Categorical(preds)

@@ -35,6 +35,7 @@ class Game():
         self.goal_reward = 1            # Récompense pour avoir marqué un but
         self.defeat_reward = -1         # Récompense pour avoir perdu un but
         self.touch_ball_reward = 0.5    # Récompense pour avoir touché la balle
+        self.epsilon_AI = 0.8
         self.botOP_error = 0           # Erreur du botOP
 
         # Initialisation de Pygame
@@ -92,6 +93,7 @@ class Game():
                 self.envAI.end_of_episode(self.goal_reward, self.last_touching_frame)
                 self.manage_episode_results()
                 self.AI_touched_the_ball = False
+                self.epsilon_AI = 0.9999 * self.epsilon_AI
 
         elif self.ball.rect.right >= self.WIDTH:
             self.left_score += 1
@@ -102,6 +104,7 @@ class Game():
                 self.envAI.end_of_episode(self.defeat_reward, self.last_touching_frame)
                 self.manage_episode_results()
                 self.AI_touched_the_ball = False
+                self.epsilon_AI = 0.9999 * self.epsilon_AI
 
         self.frame_number += 1
 
