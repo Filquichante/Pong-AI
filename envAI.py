@@ -72,10 +72,9 @@ class EnvAI:
         self.returns.reverse()
 
         self.returns = torch.tensor(self.returns)
-        self.returns = (self.returns - self.returns.mean()) / (self.returns.std() + 1e-8)  # normalisation
 
         # Compute weighted log probabilities
-        weighted_log_probs = torch.stack(self.log_probs) * self.returns
+        weighted_log_probs = torch.stack(self.log_probs) * self.returns / len(self.returns)
         
         # Compute the loss as the negative sum of weighted log probabilities
         self.loss = -torch.sum(weighted_log_probs)

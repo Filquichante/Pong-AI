@@ -1,5 +1,6 @@
 import pygame
 import sys
+import math
 import torch
 from paddle import Paddle
 from ball import Ball
@@ -11,7 +12,7 @@ class Game():
     def __init__(self):
 
 
-        self.display_active = True
+        self.display_active = False
         self.trainingAI = True
         self.AI_touched_the_ball = False
 
@@ -26,10 +27,10 @@ class Game():
         self.BALL_SPEED = 12
         self.PADDLE_SPEED = self.BALL_SPEED // 1.5
 
-        self.FPS = 10000 if self.display_active else 60
+        self.FPS = 10000 if not self.display_active else 60
 
         self.passive_reward = 0  # Récompense passive pour chaque frame
-        self.botOP_error = 100  # Erreur du botOP
+        self.botOP_error = 70  # Erreur du botOP
 
         # Initialisation de Pygame
         pygame.init()
@@ -37,6 +38,7 @@ class Game():
         # Fenêtre plein écran
         self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         self.WIDTH, self.HEIGHT = self.screen.get_size()
+        self.alpha_angle = math.atan(self.WIDTH/self.HEIGHT)
         pygame.display.set_caption("Pong")
 
         
@@ -61,7 +63,7 @@ class Game():
 
     def update(self):
         # Mouvements
-        self.left_paddle.move_towards(self.ball.rect.centery, self.HEIGHT)
+        #self.left_paddle.move_towards(self.ball.rect.centery, self.HEIGHT)
         self.envAI.update()
         
         #self.right_paddle.move_manual(pygame.K_UP, pygame.K_DOWN, self.HEIGHT)
@@ -73,7 +75,7 @@ class Game():
         self.ball.check_collision(self.left_paddle, self.right_paddle, self.BALL_SPEED)
 
         # Update de la prédiction du botOP
-        #self.bot.update()
+        self.bot.update()
 
         # Vérification des scores
         if self.ball.rect.left <= 0:
@@ -142,6 +144,6 @@ class Game():
         print("Loss :", self.envAI.loss.item())
         print("----------------------------------")
 
-        if self.left_score%100 == 0 or self.right_score%100 == 0:
+        if (self.left_score%100 == 0 and self.left_score>0) or (self.right_score%100 == 0 and self.right_score>0):
             self.save_agent("agent.pth")
             print("Agent enregistré tous les 100 scores !")
