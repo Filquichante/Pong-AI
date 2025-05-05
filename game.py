@@ -12,9 +12,11 @@ class Game():
     def __init__(self):
 
 
-        self.display_active = False
+        self.display_active = True
         self.trainingAI = True
         self.AI_touched_the_ball = False
+        self.frame_number = 0
+        self.last_touching_frame = 0 
 
 
         # Constantes
@@ -29,8 +31,11 @@ class Game():
 
         self.FPS = 10000 if not self.display_active else 60
 
-        self.passive_reward = 0  # Récompense passive pour chaque frame
-        self.botOP_error = 70  # Erreur du botOP
+        self.passive_reward = 0.01     # Récompense passive pour chaque frame
+        self.goal_reward = 1            # Récompense pour avoir marqué un but
+        self.defeat_reward = -1         # Récompense pour avoir perdu un but
+        self.touch_ball_reward = 0.5    # Récompense pour avoir touché la balle
+        self.botOP_error = 0           # Erreur du botOP
 
         # Initialisation de Pygame
         pygame.init()
@@ -38,7 +43,8 @@ class Game():
         # Fenêtre plein écran
         self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         self.WIDTH, self.HEIGHT = self.screen.get_size()
-        self.alpha_angle = math.atan(self.WIDTH/self.HEIGHT)
+        #self.alpha_angle = math.atan(self.WIDTH/self.HEIGHT)
+        self.alpha_angle = 0
         pygame.display.set_caption("Pong")
 
         
@@ -80,20 +86,24 @@ class Game():
         # Vérification des scores
         if self.ball.rect.left <= 0:
             self.right_score += 1
+            self.frame_number, self.last_touching_frame = 0, 0
             self.ball.reset(self.WIDTH, self.HEIGHT)
             if self.trainingAI and self.AI_touched_the_ball:
-                self.envAI.end_of_episode(10)
+                self.envAI.end_of_episode(self.goal_reward, self.last_touching_frame)
                 self.manage_episode_results()
                 self.AI_touched_the_ball = False
 
         elif self.ball.rect.right >= self.WIDTH:
             self.left_score += 1
+            self.frame_number, self.last_touching_frame = 0, 0
             self.ball.reset(self.WIDTH, self.HEIGHT)
             
             if self.trainingAI:
-                self.envAI.end_of_episode(-1)
+                self.envAI.end_of_episode(self.defeat_reward, self.last_touching_frame)
                 self.manage_episode_results()
                 self.AI_touched_the_ball = False
+
+        self.frame_number += 1
 
     def draw(self):
         # Affichage

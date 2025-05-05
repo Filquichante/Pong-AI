@@ -16,7 +16,7 @@ class EnvAI:
                        self.game.ball.speed_x / self.game.BALL_SPEED,
                        self.game.ball.speed_y / self.game.BALL_SPEED])
         
-        self.gamma = 0.99  # Discount factor
+        self.gamma = 0.998  # Discount factor
         self.log_probs = []
         self.rewards = []
         self.loss = torch.tensor(0)
@@ -34,6 +34,7 @@ class EnvAI:
                        self.game.ball.rect.centerx / self.game.WIDTH,
                        self.game.ball.speed_x / self.game.BALL_SPEED,
                        self.game.ball.speed_y / self.game.BALL_SPEED])
+        
         
         # Obtenir les probabilités des actions
         preds = self.game.agent(self.state)
@@ -60,21 +61,20 @@ class EnvAI:
     
 
     ## Fonction pour enregistrer la récompense finale de chaque frame de l'épisode, puis la fonction d'erreur
-    def end_of_episode(self, final_reward):
+    def end_of_episode(self, final_reward, last_touching_frame):
 
-        
-
-
+        last_touching_frame = self.game.frame_number if last_touching_frame == 0 else last_touching_frame
+        self.rewards[last_touching_frame] += final_reward  # Récompense finale de l'épisode
         self.returns = []
-        for r in reversed(self.rewards):
-            final_reward = r + self.gamma * final_reward
-            self.returns.append(final_reward)
+        self.final_return = 0
+        for reward in reversed(self.rewards):
+            self.final_return = reward + self.gamma * self.final_return
+            self.returns.append(self.final_return)
         self.returns.reverse()
-
         self.returns = torch.tensor(self.returns)
 
         # Compute weighted log probabilities
-        weighted_log_probs = torch.stack(self.log_probs) * self.returns / len(self.returns)
+        weighted_log_probs = torch.stack(self.log_probs) * self.returns
         
         # Compute the loss as the negative sum of weighted log probabilities
         self.loss = -torch.sum(weighted_log_probs)
