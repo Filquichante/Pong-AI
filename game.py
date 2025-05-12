@@ -4,8 +4,6 @@ import math
 import torch
 from paddle import Paddle
 from ball import Ball
-from envAI import EnvAI
-from agent import Agent
 from BotOp import BotOP
 
 class Game():
@@ -26,10 +24,10 @@ class Game():
         self.PADDLE_WIDTH, self.PADDLE_HEIGHT = 10, 100
         self.BALL_RADIUS = 7
 
-        self.BALL_SPEED = 12
+        self.BALL_SPEED = 6
         self.PADDLE_SPEED = self.BALL_SPEED // 1.5
 
-        self.FPS = 10000 if not self.display_active else 60
+        self.FPS = 10000 if not self.display_active else 120
 
         self.passive_reward = 0.01     # Récompense passive pour chaque frame
         self.goal_reward = 1            # Récompense pour avoir marqué un but
@@ -56,9 +54,6 @@ class Game():
         self.left_paddle = Paddle(50, (self.HEIGHT - self.PADDLE_HEIGHT) // 2, self.PADDLE_WIDTH, self.PADDLE_HEIGHT, self.PADDLE_SPEED, self)
         self.right_paddle = Paddle(self.WIDTH - 50 - self.PADDLE_WIDTH, (self.HEIGHT - self.PADDLE_HEIGHT) // 2, self.PADDLE_WIDTH, self.PADDLE_HEIGHT, self.PADDLE_SPEED, self)
         self.ball = Ball(self.WIDTH, self.HEIGHT, self.BALL_RADIUS, self.BALL_SPEED, self)
-        self.envAI = EnvAI(self)
-        self.load_agent(Agent, "agent.pth")
-        self.envAI.prepare_training()
 
         # Création de l'instance du BotOP
         self.bot = BotOP(50,(self.HEIGHT - self.PADDLE_HEIGHT)//2,self.PADDLE_WIDTH,self.PADDLE_HEIGHT,self.PADDLE_SPEED,self)
@@ -71,9 +66,8 @@ class Game():
     def update(self):
         # Mouvements
         #self.left_paddle.move_towards(self.ball.rect.centery, self.HEIGHT)
-        self.envAI.update()
         
-        #self.right_paddle.move_manual(pygame.K_UP, pygame.K_DOWN, self.HEIGHT)
+        self.right_paddle.move_manual(pygame.K_UP, pygame.K_DOWN, self.HEIGHT)
 
         # Mouvements de la balle
         self.ball.move(self.WIDTH, self.HEIGHT)
@@ -89,22 +83,11 @@ class Game():
             self.right_score += 1
             self.frame_number, self.last_touching_frame = 0, 0
             self.ball.reset(self.WIDTH, self.HEIGHT)
-            if self.trainingAI and self.AI_touched_the_ball:
-                self.envAI.end_of_episode(self.goal_reward, self.last_touching_frame)
-                self.manage_episode_results()
-                self.AI_touched_the_ball = False
-                self.epsilon_AI = 0.9999 * self.epsilon_AI
 
         elif self.ball.rect.right >= self.WIDTH:
             self.left_score += 1
             self.frame_number, self.last_touching_frame = 0, 0
             self.ball.reset(self.WIDTH, self.HEIGHT)
-            
-            if self.trainingAI:
-                self.envAI.end_of_episode(self.defeat_reward, self.last_touching_frame)
-                self.manage_episode_results()
-                self.AI_touched_the_ball = False
-                self.epsilon_AI = 0.9999 * self.epsilon_AI
 
         self.frame_number += 1
 
@@ -125,38 +108,6 @@ class Game():
         # Scores
         left_text = self.font.render(str(self.left_score), True, self.WHITE)
         right_text = self.font.render(str(self.right_score), True, self.WHITE)
-        loss_text = self.font.render("Loss: " + str(self.envAI.loss.item()), True, self.WHITE)
-        self.screen.blit(loss_text, (self.WIDTH // 2 - loss_text.get_width() // 2, 20))
+
         self.screen.blit(left_text, (self.WIDTH // 4 - left_text.get_width() // 2, 20))
         self.screen.blit(right_text, (3 * self.WIDTH // 4 - right_text.get_width() // 2, 20))
-
-    def save_agent(self, path="agent.pth"):
-        torch.save(self.agent.state_dict(), "agent.pth")
-        print("Agent enregistré")
-
-
-    def load_agent(self, agent_class, path="agent.pth"):
-        self.agent = agent_class(self.envAI)
-
-        try:
-            self.agent.load_state_dict(torch.load(path))
-            if self.trainingAI:
-                self.agent.train()
-            else:
-                self.agent.eval()
-
-        except FileNotFoundError:
-            print("Le fichier n'existe pas. Un nouvel agent sera créé.")
-
-
-    def manage_episode_results(self):
-        # Affichage des résultats de l'épisode
-        print("----------------------------------")
-        print("Score gauche :", self.left_score)
-        print("Score droite :", self.right_score)
-        print("Loss :", self.envAI.loss.item())
-        print("----------------------------------")
-
-        if (self.left_score%100 == 0 and self.left_score>0) or (self.right_score%100 == 0 and self.right_score>0):
-            self.save_agent("agent.pth")
-            print("Agent enregistré tous les 100 scores !")

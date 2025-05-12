@@ -10,11 +10,9 @@ game = Game()
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            game.save_agent(game.agent)
             pygame.quit()
             sys.exit()
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            game.save_agent(game.agent)
             pygame.quit()
             sys.exit()
 
