@@ -24,3 +24,37 @@ class Agent(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+    
+    def select_action(self, state, epsilon):
+        if random.random() < epsilon:
+            return random.randint(0, self.output_size - 1)
+        else:
+            with torch.no_grad():
+                state = torch.FloatTensor(state).unsqueeze(0)
+                q_values = self.forward(state)
+                action = torch.argmax(q_values).item()
+            return action
+    
+    def train_model(self, memory, batch_size, gamma):
+        if len(memory) < batch_size:
+            return
+
+        batch = random.sample(memory, batch_size)
+        states, actions, rewards, next_states, dones = zip(*batch)
+
+        states = torch.FloatTensor(states)
+        actions = torch.LongTensor(actions).unsqueeze(1)
+        rewards = torch.FloatTensor(rewards).unsqueeze(1)
+        next_states = torch.FloatTensor(next_states)
+        dones = torch.FloatTensor(dones).unsqueeze(1)
+
+        q_values = self.forward(states).gather(1, actions)
+        next_q_values = self.forward(next_states).max(1)[0].detach()
+        target_q_values = rewards + (1 - dones) * gamma * next_q_values
+
+        loss = F.mse_loss(q_values, target_q_values.unsqueeze(1))
+
+        optimizer = optim.Adam(self.parameters(), lr=0.001)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
